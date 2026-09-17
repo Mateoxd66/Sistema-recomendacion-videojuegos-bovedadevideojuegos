@@ -11,14 +11,14 @@ En esta demo presentamos tres funciones principales de nuestro sistema de videoj
 
 ## Como ejecutar el programa
 
-1. Descargar o clonar el proyecto
+1. Descargar o clonar este repositorio desde Github.
 
-2. Abrir la carpeta del proyecto
+3. Abrir la carpeta del proyecto.
 
-3. Instalar Pandas:
+4. Instalar Pandas:
 
-
-"pip install pandas"
+``bash
+pip install pandas
 
 
 4. Ejecutar el archivo principal:
