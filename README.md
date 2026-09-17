@@ -53,7 +53,7 @@ Cierra el programa.
 El programa utiliza un archivo CSV con información de videojuegos, incluyendo datos como titulo, fecha de lanzamiento, genero y rating.
 
 
-## Integrantes
+## Integrantes GRUPO 18
 
 - Mateo Esquef
 - Francisco Storino
