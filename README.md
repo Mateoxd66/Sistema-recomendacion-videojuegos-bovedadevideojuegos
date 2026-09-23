@@ -1,70 +1,80 @@
-# BÓVEDA DE VIDEOJUEGOS
+# BOVEDA DE VIDEOJUEGOS
 
 ## Sobre el proyecto
 
-En esta demo presentamos las funciones principales de nuestro sistema de consulta e información de videojuegos:
-- Buscar juegos y consultar su información detallada.
-- Recibir recomendaciones según géneros.
-- Ver un Top 10 según rating.
-- **Análisis de Complejidad y Medición de Tiempos:** Módulo experimental que compara el rendimiento de la búsqueda secuencial frente a la búsqueda indexada/en árbol con distintos volúmenes de datos ($1.000$, $10.000$ y $100.000$ elementos).
-
-El objetivo es ayudar a los jugadores a encontrar nuevos títulos y demostrar la eficiencia algorítmica al escalar la base de datos.
-
----
+En esta demo presentamos un sistema de recomendación y búsqueda de videojuegos. Permite buscar juegos, consultar su información, recibir recomendaciones según el género y ver un Top 10 según el rating. Además, se incorporaron dos métodos de búsqueda para comparar sus tiempos de ejecución.
 
 ## Requisitos
 
-- Python 3.10+ (probado en Python 3.13)
-- Pandas
+* Python 3.13
+* Pandas
 
----
+## Como ejecutar el programa
 
-## Cómo ejecutar el programa
-
-1. Descargar o clonar este repositorio desde GitHub.
-2. Abrir la carpeta del proyecto en la terminal o IDE.
+1. Descargar o clonar el proyecto.
+2. Abrir la carpeta del proyecto.
 3. Instalar Pandas:
-   ```bash
-   pip install pandas
-Ejecutar el archivo principal:
 
-Bash
+```bash
+pip install pandas
+```
+
+4. Ejecutar el archivo principal:
+
+```bash
 python main.py
-Cómo utilizar el programa
-Al iniciar el programa aparecerá un menú interactivo con las siguientes opciones:
+```
 
-Buscar un videojuego (Búsqueda Secuencial): Consulta un juego recorriendo el dataset elemento por elemento (O(n)).
+## Como utilizar el programa
 
-Buscar un videojuego (Búsqueda en Árbol / Índice): Consulta un juego mediante un índice ordenado que descarta mitades en cada paso (O(logn)).
+Al iniciar el programa aparecerá un menú con las siguientes opciones:
 
-Recomendar por género: Ingresa un género y muestra hasta 5 videojuegos recomendados ordenados por rating.
+### 1. Buscar un videojuego (Búsqueda Secuencial)
 
-Ver Top 10: Muestra los 10 videojuegos con mayor rating dentro del dataset.
+Permite ingresar el título de un videojuego y consultar su información:
 
-Ejecutar experimento de complejidad (Tiempos): Corre las pruebas de rendimiento comparando ambas estrategias sobre 1.000, 10.000 y 100.000 registros e imprime la tabla de tiempos en milisegundos.
+* Título
+* Fecha de lanzamiento
+* Rating
+* Géneros
 
-Salir: Cierra el programa.
+La búsqueda se realiza recorriendo los datos de forma secuencial.
 
-Dataset
-El programa utiliza un archivo CSV (games.csv) que contiene información sobre videojuegos con los siguientes campos principales:
+### 2. Buscar un videojuego (Búsqueda en Árbol / Índice)
 
-Title (Título)
+Permite buscar un videojuego utilizando un índice ordenado por título. También muestra su información:
 
-Release Date (Fecha de lanzamiento)
+* Título
+* Fecha de lanzamiento
+* Rating
+* Géneros
 
-Rating (Puntuación)
+Esta opción permite comparar la búsqueda mediante índice con la búsqueda secuencial.
 
-Genres (Géneros)
+### 3. Recomendar por género
 
-Developers, Platforms, entre otros.
+Permite ingresar un género y muestra hasta 5 videojuegos recomendados, ordenados según su rating.
 
-Análisis de Complejidad
-Estrategia	Notación Peor Caso	Descripción
-Búsqueda Secuencial	O(n)/Θ(n)	Filtrado directo por fila. Su tiempo crece de forma estrictamente lineal a medida que aumenta el volumen de datos.
-Búsqueda en Árbol / Índice	O(logn)/Θ(logn)	Búsqueda logarítmica sobre el índice ordenado. Mantiene un tiempo de respuesta casi constante sin importar el tamaño del dataset.
-Integrantes - GRUPO 18
-Mateo Esquef
+### 4. Ver Top 10
 
-Francisco Storino
+Muestra los 10 videojuegos con mayor rating dentro del dataset.
 
-Dylan Stellato
+### 5. Ejecutar experimento de complejidad
+
+Realiza mediciones de tiempo para comparar la búsqueda secuencial con la búsqueda mediante índice utilizando diferentes cantidades de elementos: 1.000, 10.000 y 100.000.
+
+Los resultados se muestran en milisegundos para observar cómo cambia el tiempo de búsqueda según el tamaño de los datos.
+
+### 6. Salir
+
+Cierra el programa.
+
+## Dataset
+
+El programa utiliza un archivo CSV con información de videojuegos, incluyendo datos como título, fecha de lanzamiento, género y rating.
+
+## Integrantes
+
+* Mateo Esquef
+* Francisco Storino
+* Dylan Stellato
