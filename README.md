@@ -222,15 +222,20 @@ Contiene:
 
 Contiene el dataset utilizado por el programa.
 
-Complejidad
-Operación	Complejidad
-Búsqueda secuencial	Θ(n)
-Búsqueda en árbol balanceado	Θ(log n)
-Búsqueda en árbol desbalanceado, peor caso	Θ(n)
-Inserción en árbol balanceado	Θ(log n)
-Inserción en árbol desbalanceado, peor caso	Θ(n)
-Recorridos del árbol	Θ(n)
-Integrantes
-Mateo Esquef
-Francisco Storino
-Dylan Stellato
+## Complejidad
+
+| Operación                                   | Complejidad |
+| ------------------------------------------- | ----------: |
+| Búsqueda secuencial                         |        Θ(n) |
+| Búsqueda en árbol balanceado                |    Θ(log n) |
+| Búsqueda en árbol desbalanceado, peor caso  |        Θ(n) |
+| Inserción en árbol balanceado               |    Θ(log n) |
+| Inserción en árbol desbalanceado, peor caso |        Θ(n) |
+| Recorridos del árbol                        |        Θ(n) |
+
+## Integrantes GRUPO 18
+
+* Mateo Esquef
+* Francisco Storino
+* Dylan Stellato
+
