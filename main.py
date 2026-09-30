@@ -1,52 +1,105 @@
 from Tpintegrador import Videojuegos
 
+
 juegos = Videojuegos()
 
+
 while True:
+
     print("===============================================")
-    print("            BOVEDA DE VIDEOJUEGOS              ")
+    print("            BOVEDA DE VIDEOJUEGOS")
     print("===============================================")
 
-    print("[1]. Buscar un videojuego (Búsqueda Secuencial)")
-    print("[2]. Buscar un videojuego (Búsqueda en Árbol / Índice)")
-    print("[3]. Recomendar por genero")
-    print("[4]. Ver Top 10")
-    print("[5]. Ejecutar experimento de complejidad (Tiempos)")
-    print("[6]. Salir")
+    print("[1]. Buscar un videojuego")
+    print("[2]. Recomendar por genero")
+    print("[3]. Ver Top 10")
+    print("[4]. Comparar busquedas")
+    print("[5]. Recorrido Inorder")
+    print("[6]. Recorrido Preorder")
+    print("[7]. Recorrido Postorder")
+    print("[8]. Pruebas de rendimiento")
+    print("[9]. Salir")
 
-    opcion = input("Ingrese una opcion (1-6): ")
+    opcion = input("Ingrese una opcion (1-9): ")
+
+
+    # =================================
+    # BUSCAR VIDEOJUEGO
+    # =================================
 
     if opcion == "1":
+
         nombre = input("Ingrese el titulo del videojuego: ")
+
         juegos.Info_juegos(nombre)
 
-    elif opcion == "2":
-        nombre = input("Ingrese el titulo del videojuego: ")
-        encontrado, juego = juegos.Info_juegos_arbol(nombre)
-        if encontrado:
-            print("Titulo:", nombre)
-            print("Fecha de salida:", juego["Release Date"])
-            print("Rating:", juego["Rating"])
-            print("Genero:", juego["Genres"])
-        else:
-            print("Videojuego no encontrado")
 
-    elif opcion == "3":
+    # =================================
+    # RECOMENDAR
+    # =================================
+
+    elif opcion == "2":
+
         genero = input("Ingresa un genero: ")
+
         juegos.recomendar(genero)
 
-    elif opcion == "4":
+
+    # =================================
+    # TOP 10
+    # =================================
+
+    elif opcion == "3":
+
         juegos.top_10()
 
+
+    # =================================
+    # COMPARAR BÚSQUEDAS
+    # =================================
+
+    elif opcion == "4":
+
+        nombre = input("Ingrese el titulo del videojuego: ")
+
+        juegos.comparar_busquedas(nombre)
+
+
+    # =================================
+    # INORDER
+    # =================================
+
     elif opcion == "5":
-        print("\nEjecutando mediciones de complejidad...")
-        juegos.experimento_tiempos()
+
+        juegos.mostrar_inorder()
+
+
+    # =================================
+    # PREORDER
+    # =================================
 
     elif opcion == "6":
-        print("¡Hasta luego!")
-        break
 
-    else:
-        print("Opcion Invalida.")
+        juegos.mostrar_preorder()
 
-    input("\nPresiona Enter para volver al menu..")
+
+    # =================================
+    # POSTORDER
+    # =================================
+
+    elif opcion == "7":
+
+        juegos.mostrar_postorder()
+
+
+    elif opcion == "8":
+
+       juegos.pruebas_rendimiento()
+
+
+    elif opcion == "9":
+
+      print("¡Hasta luego!")
+      break
+   
+     
