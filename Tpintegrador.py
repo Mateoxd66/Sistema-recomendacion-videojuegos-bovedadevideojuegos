@@ -346,6 +346,152 @@ class ArbolGeneral:
         return resultado
 
 
+
+# =========================
+# HEAP (COLA DE PRIORIDAD) - TP6
+# =========================
+
+class Heap:
+    def __init__(self):
+        self.elementos = []
+
+    def prioridad(self, juego):
+        return juego["_rating_heap"]
+
+    def construir(self, juegos):
+        self.elementos = list(juegos)
+
+        for i in range(len(self.elementos) // 2 - 1, -1, -1):
+            self.bajar(i)
+
+    def bajar(self, indice):
+        mayor = indice
+        izquierdo = 2 * indice + 1
+        derecho = 2 * indice + 2
+
+        if izquierdo < len(self.elementos):
+            if self.prioridad(self.elementos[izquierdo]) > self.prioridad(self.elementos[mayor]):
+                mayor = izquierdo
+
+        if derecho < len(self.elementos):
+            if self.prioridad(self.elementos[derecho]) > self.prioridad(self.elementos[mayor]):
+                mayor = derecho
+
+        if mayor != indice:
+            self.elementos[indice], self.elementos[mayor] = self.elementos[mayor], self.elementos[indice]
+            self.bajar(mayor)
+
+    def extraer_maximo(self):
+        if not self.elementos:
+            return None
+
+        if len(self.elementos) == 1:
+            return self.elementos.pop()
+
+        mayor = self.elementos[0]
+        self.elementos[0] = self.elementos.pop()
+        self.bajar(0)
+        return mayor
+
+
+# =========================
+# GRAFO NO DIRIGIDO - TP7
+# =========================
+
+class GrafoVideojuegos:
+    """Grafo bipartito: nodos de juegos conectados con nodos de géneros/desarrolladores."""
+
+    def __init__(self):
+        self.adyacencia = {}
+        self.titulos = {}
+
+    def agregar_nodo(self, nodo):
+        if nodo not in self.adyacencia:
+            self.adyacencia[nodo] = []
+
+    def agregar_arista(self, origen, destino):
+        self.agregar_nodo(origen)
+        self.agregar_nodo(destino)
+
+        if destino not in self.adyacencia[origen]:
+            self.adyacencia[origen].append(destino)
+        if origen not in self.adyacencia[destino]:
+            self.adyacencia[destino].append(origen)
+
+    def construir(self, datos, col_generos, col_desarrolladores):
+        self.adyacencia = {}
+        self.titulos = {}
+
+        for _, fila in datos.iterrows():
+            titulo = fila.get("Title")
+            if pd.isna(titulo) or not str(titulo).strip():
+                continue
+
+            titulo = str(titulo).strip()
+            clave = normalizar(titulo)
+            nodo_juego = "JUEGO:" + clave
+
+            if clave in self.titulos:
+                continue
+
+            self.titulos[clave] = (titulo, nodo_juego)
+            self.agregar_nodo(nodo_juego)
+
+            if col_generos is not None:
+                for genero in obtener_generos(fila[col_generos]):
+                    nodo_genero = "GENERO:" + normalizar(genero)
+                    self.agregar_arista(nodo_juego, nodo_genero)
+
+            if col_desarrolladores is not None:
+                for desarrollador in obtener_generos(fila[col_desarrolladores]):
+                    nodo_desarrollador = "DESARROLLADOR:" + normalizar(desarrollador)
+                    self.agregar_arista(nodo_juego, nodo_desarrollador)
+
+    def mostrar_relacionados(self, titulo):
+        clave = normalizar(titulo)
+
+        if clave not in self.titulos:
+            print("No se encontró ese videojuego en el grafo.")
+            return
+
+        nombre, nodo_juego = self.titulos[clave]
+        atributos = self.adyacencia.get(nodo_juego, [])
+        relacionados_desarrollador = []
+        relacionados_genero = []
+        vistos = {clave}
+        # Primero se recorren los desarrolladores para darles prioridad.
+        atributos = sorted(atributos, key=lambda nodo: 0 if nodo.startswith("DESARROLLADOR:") else 1)
+
+        for atributo in atributos:
+            es_desarrollador = atributo.startswith("DESARROLLADOR:")
+            destino = relacionados_desarrollador if es_desarrollador else relacionados_genero
+
+            for vecino in self.adyacencia.get(atributo, []):
+                if not vecino.startswith("JUEGO:"):
+                    continue
+
+                clave_vecino = vecino[len("JUEGO:"):]
+                if clave_vecino in vistos:
+                    continue
+
+                vistos.add(clave_vecino)
+                titulo_vecino = self.titulos[clave_vecino][0]
+                destino.append(titulo_vecino)
+
+        print(f"\n--- VIDEOJUEGOS RELACIONADOS CON {nombre} ---")
+        print("Relación por desarrollador:", len(relacionados_desarrollador))
+        for juego in relacionados_desarrollador[:10]:
+            print("-", juego)
+        if len(relacionados_desarrollador) > 10:
+            print(f"Se muestran 10 de {len(relacionados_desarrollador)}.")
+
+        print("Relación por género:", len(relacionados_genero))
+        for juego in relacionados_genero[:10]:
+            print("-", juego)
+        if len(relacionados_genero) > 10:
+            print(f"Se muestran 10 de {len(relacionados_genero)}.")
+
+
 # =========================
 # CLASE PRINCIPAL
 # =========================
@@ -372,6 +518,9 @@ class Videojuegos:
         self.col_fecha = buscar_columna(
             self.datos, ["release_date", "release date", "fecha de lanzamiento", "fecha"]
         )
+        self.col_desarrolladores = buscar_columna(
+            self.datos, ["developers", "developer", "desarrolladores", "desarrollador"]
+        )
 
         if self.col_titulo is None:
             raise ValueError("No se encontró la columna de títulos.")
@@ -394,6 +543,33 @@ class Videojuegos:
             self.avl.insertar(juego)
 
         self.construir_categorias()
+
+        print("Construyendo Heap y grafo...")
+        self.heap_rating = Heap()
+        juegos_con_rating = []
+        titulos_heap = set()
+
+        if self.col_rating is not None:
+            for _, fila in self.datos.iterrows():
+                if pd.isna(fila["Title"]) or not str(fila["Title"]).strip():
+                    continue
+                clave_titulo = normalizar(fila["Title"])
+                if clave_titulo in titulos_heap:
+                    continue
+                rating = obtener_numero(fila[self.col_rating])
+                if rating is None:
+                    continue
+                titulos_heap.add(clave_titulo)
+                juego = fila.to_dict()
+                juego["_rating_heap"] = rating
+                juegos_con_rating.append(juego)
+
+        self.heap_rating.construir(juegos_con_rating)
+
+        self.grafo = GrafoVideojuegos()
+        self.grafo.construir(
+            self.datos, self.col_generos, self.col_desarrolladores
+        )
 
         print("Datos cargados correctamente.")
         print("Registros:", len(self.datos))
@@ -661,3 +837,35 @@ class Videojuegos:
             print(f"Construcción AVL: {tiempo_avl:.6f} s")
             print(f"Búsqueda ABB: {busqueda_abb:.8f} s")
             print(f"Búsqueda AVL: {busqueda_avl:.8f} s")
+
+    # =========================
+    # TOP 5 CON HEAP 
+    # =========================
+
+    def top_5_heap(self):
+        if not self.heap_rating.elementos:
+            print("No hay valoraciones numéricas para ordenar.")
+            return
+
+        # Se usa una copia para que consultar el TOP 5 no vacíe el Heap original.
+        copia = Heap()
+        copia.elementos = self.heap_rating.elementos.copy()
+
+        print("\n--- TOP 5 CON HEAP ---")
+        for posicion in range(1, 6):
+            juego = copia.extraer_maximo()
+            if juego is None:
+                break
+            print(f"{posicion}. {juego['Title']} - Valoración: {juego['_rating_heap']}")
+
+    # =========================
+    # VIDEOJUEGOS RELACIONADOS 
+    # =========================
+
+    def mostrar_relacionados(self, titulo):
+        self.grafo.mostrar_relacionados(titulo)
+
+    # Alias para mantener compatibilidad con versiones anteriores del main.
+    def Info_juegos(self, titulo):
+        self.info_juegos(titulo)
+
