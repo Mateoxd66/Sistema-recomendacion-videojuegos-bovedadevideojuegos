@@ -8,13 +8,13 @@ Sistema de búsqueda, organización y recomendación de videojuegos desarrollado
 - Consulta de información de cada videojuego.
 - Recomendaciones por género.
 - TOP 10 según valoración.
-- TOP 5 mediante una cola de prioridad implementada con Heap (TP6).
+- TOP 5 mediante una cola de prioridad implementada con Heap.
 - Búsqueda y organización mediante ABB y AVL.
 - Recorridos Inorder, Preorder y Postorder.
 - Organización de categorías mediante un árbol general.
 - Comparación de búsquedas y alturas entre ABB y AVL.
 - Pruebas de rendimiento con diferentes cantidades de elementos.
-- Exploración de videojuegos relacionados mediante un grafo no dirigido (TP7).
+- Exploración de videojuegos relacionados mediante un grafo no dirigido.
 
 ## Tecnologías
 
