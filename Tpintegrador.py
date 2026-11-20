@@ -2,14 +2,20 @@ import pandas as pd
 import time
 import random
 import math
+import unicodedata 
 
 
 # =========================
 # FUNCIONES AUXILIARES
-# =========================
+#=========================
 
 def normalizar(texto):
-    return str(texto).strip().strip("'\"[] ").casefold()
+    texto_limpio = str(texto).strip().strip("'\"[] ")
+    sin_tildes = "".join(
+        c for c in unicodedata.normalize("NFKD", texto_limpio)
+        if not unicodedata.combining(c)
+    )
+    return " ".join(sin_tildes.casefold().split())
 
 
 def buscar_columna(datos, nombres):
@@ -636,17 +642,33 @@ class Videojuegos:
     # =========================
 
     def info_juegos(self, titulo):
+        objetivo = normalizar(titulo)
         coincidencias = self.datos[
-            self.datos["Title"].astype(str).str.casefold()
-            == str(titulo).strip().casefold()
+            self.datos["Title"].apply(normalizar) == objetivo
         ]
 
         if coincidencias.empty:
             print("No se encontró el videojuego.")
             return
 
-        for columna, valor in coincidencias.iloc[0].items():
-            print(f"{columna}: {valor}")
+        juego = coincidencias.iloc[0]
+
+        # Mostrar únicamente los cuatro datos solicitados.
+        columnas_a_mostrar = [
+            ("Título", "Title"),
+            ("Géneros", self.col_generos),
+            ("Rating", self.col_rating),
+            ("Fecha de salida", self.col_fecha)
+        ]
+
+        print("\n--- INFORMACIÓN DEL VIDEOJUEGO ---")
+
+        for etiqueta, columna in columnas_a_mostrar:
+            if columna is not None:
+                valor = juego[columna]
+                if pd.isna(valor) or not str(valor).strip():
+                    valor = "No disponible"
+                print(f"{etiqueta}: {valor}")
 
     def busqueda_secuencial(self, titulo):
         objetivo = normalizar(titulo)
@@ -868,4 +890,3 @@ class Videojuegos:
     # Alias para mantener compatibilidad con versiones anteriores del main.
     def Info_juegos(self, titulo):
         self.info_juegos(titulo)
-
