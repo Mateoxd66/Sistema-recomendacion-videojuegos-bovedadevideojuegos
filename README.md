@@ -53,7 +53,7 @@ Obtención del TOP 5: hasta cinco extracciones, O(5 log n).
 
 La consulta del TOP 5 utiliza una copia de la estructura para que se pueda volver a consultar sin vaciar el Heap original.
 
-TP7 - Grafo no dirigido (BFS y DFS - Versión 6)
+Grafo no dirigido (BFS y DFS - Versión 6)
 Se implementó un grafo no dirigido mediante listas de adyacencia. Para evitar crear una cantidad enorme de conexiones repetidas entre videojuegos que comparten géneros muy amplios, se utiliza una representación bipartita:
 
 Hay nodos de tipo videojuego.
@@ -101,7 +101,7 @@ games.csv: conjunto de datos de videojuegos.
 
 README.md: documentación del proyecto.
 
-Integrantes - Grupo 18
+## Integrantes - Grupo 18
 Mateo Esquef
 
 Francisco Storino
