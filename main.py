@@ -15,7 +15,9 @@ def mostrar_menu():
     print("10. Explorar categorías")
     print("11. Ver Top 5 con Heap")
     print("12. Ver videojuegos relacionados")
-    print("13. Salir")
+    print("13. Camino mínimo entre videojuegos (BFS)")
+    print("14. Explorar red en profundidad (DFS)")
+    print("15. Salir")
 
 
 def main():
@@ -58,6 +60,13 @@ def main():
             nombre = input("Nombre del videojuego: ").strip()
             juegos.mostrar_relacionados(nombre)
         elif opcion == "13":
+            origen = input("Videojuego de origen: ").strip()
+            destino = input("Videojuego de destino: ").strip()
+            juegos.explorar_red_bfs(origen, destino)
+        elif opcion == "14":
+            nombre = input("Videojuego desde el que querés explorar: ").strip()
+            juegos.explorar_red_dfs(nombre)
+        elif opcion == "15":
             print("Saliendo del programa...")
             break
         else:

@@ -2,26 +2,24 @@ import pandas as pd
 import time
 import random
 import math
-import unicodedata 
+from collections import deque
 
 
 # =========================
 # FUNCIONES AUXILIARES
-#=========================
+# =========================
 
 def normalizar(texto):
-    texto_limpio = str(texto).strip().strip("'\"[] ")
-    sin_tildes = "".join(
-        c for c in unicodedata.normalize("NFKD", texto_limpio)
-        if not unicodedata.combining(c)
-    )
-    return " ".join(sin_tildes.casefold().split())
+    return str(texto).strip().strip("'\"[] ").casefold()
 
 
 def buscar_columna(datos, nombres):
     for columna in datos.columns:
         for nombre in nombres:
-            if columna.strip().lower().replace("_", "").replace(" ", "") == nombre.lower().replace("_", "").replace(" ", ""):
+            nombre_columna = columna.strip().lower().replace("_", "").replace(" ", "")
+            nombre_buscado = nombre.lower().replace("_", "").replace(" ", "")
+
+            if nombre_columna == nombre_buscado:
                 return columna
     return None
 
@@ -95,9 +93,9 @@ class ArbolBinario:
             return
 
         actual = self.raiz
+        clave = normalizar(juego["Title"])
 
         while True:
-            clave = normalizar(juego["Title"])
             actual_clave = normalizar(actual.juego["Title"])
 
             if clave < actual_clave:
@@ -453,6 +451,126 @@ class GrafoVideojuegos:
                     nodo_desarrollador = "DESARROLLADOR:" + normalizar(desarrollador)
                     self.agregar_arista(nodo_juego, nodo_desarrollador)
 
+    def _etiqueta_nodo(self, nodo):
+        """Convierte las claves internas del grafo en etiquetas legibles."""
+        if nodo.startswith("JUEGO:"):
+            clave = nodo[len("JUEGO:"):]
+            return self.titulos[clave][0]
+        if nodo.startswith("GENERO:"):
+            return "Género: " + nodo[len("GENERO:"):]
+        if nodo.startswith("DESARROLLADOR:"):
+            return "Desarrollador: " + nodo[len("DESARROLLADOR:"):]
+        return nodo
+
+    def bfs(self, titulo_origen, titulo_destino):
+        """
+        Busca el camino con menor cantidad de aristas entre dos videojuegos.
+        BFS utiliza una cola FIFO y reconstruye el camino con predecesores.
+        """
+        clave_origen = normalizar(titulo_origen)
+        clave_destino = normalizar(titulo_destino)
+
+        if clave_origen not in self.titulos:
+            print("No se encontró el videojuego de origen en el grafo.")
+            return None
+
+        if clave_destino not in self.titulos:
+            print("No se encontró el videojuego de destino en el grafo.")
+            return None
+
+        inicio = self.titulos[clave_origen][1]
+        destino = self.titulos[clave_destino][1]
+
+        if inicio == destino:
+            print("El origen y el destino son el mismo videojuego.")
+            return [inicio]
+
+        pendientes = deque([inicio])
+        visitados = {inicio}
+        predecesores = {inicio: None}
+
+        # La cola garantiza que se visiten primero los nodos con menor distancia.
+        while pendientes:
+            actual = pendientes.popleft()
+
+            if actual == destino:
+                break
+
+            for vecino in self.adyacencia.get(actual, []):
+                if vecino not in visitados:
+                    visitados.add(vecino)
+                    predecesores[vecino] = actual
+                    pendientes.append(vecino)
+
+        if destino not in visitados:
+            print(f"No existe un camino entre {titulo_origen} y {titulo_destino}.")
+            return None
+
+        # Reconstruye el camino desde el destino hasta el origen.
+        camino = []
+        actual = destino
+        while actual is not None:
+            camino.append(actual)
+            actual = predecesores[actual]
+        camino.reverse()
+
+        print(f"\\n--- BFS: CAMINO MÍNIMO ENTRE VIDEOJUEGOS ---")
+        print(f"Origen: {self.titulos[clave_origen][0]}")
+        print(f"Destino: {self.titulos[clave_destino][0]}")
+        print(f"Cantidad mínima de aristas: {len(camino) - 1}")
+        print("Camino encontrado:")
+        for posicion, nodo in enumerate(camino):
+            print(f"{posicion + 1}. {self._etiqueta_nodo(nodo)}")
+
+        return camino
+
+    def dfs(self, titulo):
+        """
+        Recorre en profundidad todos los vértices alcanzables desde un videojuego.
+        Utiliza una pila LIFO y un conjunto para no visitar nodos más de una vez.
+        """
+        clave = normalizar(titulo)
+
+        if clave not in self.titulos:
+            print("No se encontró ese videojuego en el grafo.")
+            return []
+
+        nombre, inicio = self.titulos[clave]
+        pendientes = [inicio]
+        visitados = {inicio}
+        relacionados = []
+        recorrido = []
+
+        while pendientes:
+            actual = pendientes.pop()
+            recorrido.append(actual)
+
+            if actual.startswith("JUEGO:") and actual != inicio:
+                clave_vecino = actual[len("JUEGO:"):]
+                relacionados.append(self.titulos[clave_vecino][0])
+
+            # Se invierte el orden para mantener el orden original de adyacencia.
+            for vecino in reversed(self.adyacencia.get(actual, [])):
+                if vecino not in visitados:
+                    visitados.add(vecino)
+                    pendientes.append(vecino)
+
+        print(f"\\n--- DFS: EXPLORACIÓN EN PROFUNDIDAD DESDE {nombre} ---")
+
+        if not relacionados:
+            print("No se encontraron otros videojuegos conectados.")
+        else:
+            for juego in relacionados[:50]:
+                print("-", juego)
+
+            if len(relacionados) > 50:
+                print(f"Se muestran 50 de {len(relacionados)} videojuegos encontrados.")
+            else:
+                print(f"Total de videojuegos relacionados: {len(relacionados)}")
+
+        print(f"Vértices visitados en total: {len(recorrido)}")
+        return relacionados
+
     def mostrar_relacionados(self, titulo):
         clave = normalizar(titulo)
 
@@ -538,7 +656,10 @@ class Videojuegos:
         self.avl = ArbolAVL()
         self.arbol_general = ArbolGeneral()
 
-        print("Cargando los árboles...")
+        print("Cargando los árboles y preparando el Heap...")
+
+        juegos_con_rating = []
+        titulos_heap = set()
 
         for _, fila in self.datos.iterrows():
             if pd.isna(fila["Title"]) or not str(fila["Title"]).strip():
@@ -548,28 +669,22 @@ class Videojuegos:
             self.arbol.insertar(juego)
             self.avl.insertar(juego)
 
+            if self.col_rating is not None:
+                clave_titulo = normalizar(fila["Title"])
+
+                if clave_titulo not in titulos_heap:
+                    rating = obtener_numero(fila[self.col_rating])
+
+                    if rating is not None:
+                        titulos_heap.add(clave_titulo)
+                        juego_heap = juego.copy()
+                        juego_heap["_rating_heap"] = rating
+                        juegos_con_rating.append(juego_heap)
+
         self.construir_categorias()
 
         print("Construyendo Heap y grafo...")
         self.heap_rating = Heap()
-        juegos_con_rating = []
-        titulos_heap = set()
-
-        if self.col_rating is not None:
-            for _, fila in self.datos.iterrows():
-                if pd.isna(fila["Title"]) or not str(fila["Title"]).strip():
-                    continue
-                clave_titulo = normalizar(fila["Title"])
-                if clave_titulo in titulos_heap:
-                    continue
-                rating = obtener_numero(fila[self.col_rating])
-                if rating is None:
-                    continue
-                titulos_heap.add(clave_titulo)
-                juego = fila.to_dict()
-                juego["_rating_heap"] = rating
-                juegos_con_rating.append(juego)
-
         self.heap_rating.construir(juegos_con_rating)
 
         self.grafo = GrafoVideojuegos()
@@ -642,33 +757,17 @@ class Videojuegos:
     # =========================
 
     def info_juegos(self, titulo):
-        objetivo = normalizar(titulo)
         coincidencias = self.datos[
-            self.datos["Title"].apply(normalizar) == objetivo
+            self.datos["Title"].astype(str).str.casefold()
+            == str(titulo).strip().casefold()
         ]
 
         if coincidencias.empty:
             print("No se encontró el videojuego.")
             return
 
-        juego = coincidencias.iloc[0]
-
-        # Mostrar únicamente los cuatro datos solicitados.
-        columnas_a_mostrar = [
-            ("Título", "Title"),
-            ("Géneros", self.col_generos),
-            ("Rating", self.col_rating),
-            ("Fecha de salida", self.col_fecha)
-        ]
-
-        print("\n--- INFORMACIÓN DEL VIDEOJUEGO ---")
-
-        for etiqueta, columna in columnas_a_mostrar:
-            if columna is not None:
-                valor = juego[columna]
-                if pd.isna(valor) or not str(valor).strip():
-                    valor = "No disponible"
-                print(f"{etiqueta}: {valor}")
+        for columna, valor in coincidencias.iloc[0].items():
+            print(f"{columna}: {valor}")
 
     def busqueda_secuencial(self, titulo):
         objetivo = normalizar(titulo)
@@ -883,6 +982,12 @@ class Videojuegos:
     # =========================
     # VIDEOJUEGOS RELACIONADOS 
     # =========================
+
+    def explorar_red_bfs(self, titulo_origen, titulo_destino):
+        return self.grafo.bfs(titulo_origen, titulo_destino)
+
+    def explorar_red_dfs(self, titulo):
+        return self.grafo.dfs(titulo)
 
     def mostrar_relacionados(self, titulo):
         self.grafo.mostrar_relacionados(titulo)
